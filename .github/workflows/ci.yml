@@ -1,0 +1,25 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+        go-version: ["1.22.x", "1.26.x"]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: ${{ matrix.go-version }}
+          cache: true
+      - name: Check formatting
+        shell: bash
+        run: test -z "$(gofmt -l $(git ls-files '*.go'))"
+      - run: go vet ./...
+      - run: go test -cover ./...
