@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<configuration>
+  <appSettings>
+    <add key="X-KDApi-AcctID" value="账套ID" />
+    <add key="X-KDApi-AppID" value="应用ID" />
+    <add key="X-KDApi-AppSec" value="应用密钥" />
+    <add key="X-KDApi-UserName" value="用户名" />
+    <add key="X-KDApi-LCID" value="2052" />
+    <add key="X-KDApi-ServerUrl" value="https://example.com/k3cloud/" />
+    <add key="X-KDApi-OrgNum" value="组织编码" />
+  </appSettings>
+</configuration>

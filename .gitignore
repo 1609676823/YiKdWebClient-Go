@@ -1,0 +1,29 @@
+# Go build and test output
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+*.test
+*.out
+coverage.txt
+coverage.html
+
+# Workspace-local Go configuration
+go.work
+go.work.sum
+
+# IDE and OS metadata
+.idea/
+.vscode/
+.vs/
+.DS_Store
+Thumbs.db
+
+# Local configuration and secrets
+.env
+.env.*
+!.env.example
+YiKdWebCfg/appsettings.xml
+*.cnf
+!*.cnf.example
