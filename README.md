@@ -26,8 +26,6 @@ YiKdWebClient-Go 是按 C# 主项目 `1.0.0.32` 行为移植的 Go 客户端。�
 - 第三方依赖：无，仅使用 Go 标准库
 - 许可证：MIT
 
-README 的 15 张编号截图均由 `examples/readme` 程序实际运行后自动生成。默认连接本地临时 HTTP mock 服务，也可显式切换到使用者自己的真实测试环境。
-
 ### 共同功能范围
 
 所有已适配语言版本共同覆盖：
@@ -45,7 +43,7 @@ README 的 15 张编号截图均由 `examples/readme` 程序实际运行后自�
 > 配置模板、mock 输出或本地测试截图只用于演示。接入自己的环境时，必须替换数据中心 ID、集成用户、应用 ID、应用密钥、服务地址和集成密钥文件。请勿把生产密钥、生产密码、CNF、Cookie 或长期有效的会话信息提交到公开仓库。
 
 > [!IMPORTANT]
-> 旧版用户名密码认证只用于协议兼容。部分语言的独立代码使用 `123456` 作为明确占位符；可运行示例只从 `YIKD_VALIDATE_PASSWORD` 环境变量读取真实测试密码，并在控制台和截图中脱敏。
+> 旧版用户名密码认证只用于协议兼容。README 的独立代码会直接定义 `123456` 等清晰占位值，并在旁边注明需要替换；复制示例后请改成目标测试环境的真实认证信息。
 
 > [!NOTE]
 > 部分代码、测试、文档、示例或其他项目内容，可能在维护者指导和审查下借助 AI 工具生成、补全、重构或校对。AI 辅助内容在合并或发布前仍会由维护者进行审查和必要验证；使用者也应结合实际金蝶版本、补丁、权限和业务数据，自行评估正确性、安全性与适用性。
@@ -65,8 +63,7 @@ README 的 15 张编号截图均由 `examples/readme` 程序实际运行后自�
 - [11. 发布、Release 资源与仓库文件职责](#11-发布release-资源与仓库文件职责)
 - [12. 兼容性、依赖与从 C# 迁移](#12-兼容性依赖与从-c-迁移)
 - [13. 常见问题](#13-常见问题)
-- [14. 重新生成 README 截图](#14-重新生成-readme-截图)
-- [15. 开发、测试与双远端推送](#15-开发测试与双远端推送)
+- [14. 开发、测试与双远端推送](#14-开发测试与双远端推送)
 
 ## 1. 相关资料
 
@@ -195,17 +192,17 @@ cp YiKdWebCfg/appsettings.example.xml YiKdWebCfg/appsettings.xml
 <?xml version="1.0" encoding="utf-8"?>
 <configuration>
   <appSettings>
-    <!-- 数据中心 ID / 账套 ID -->
-    <add key="X-KDApi-AcctID" value="请替换" />
+    <!-- 请替换为真实数据中心 ID / 账套 ID -->
+    <add key="X-KDApi-AcctID" value="YOUR_ACCOUNT_ID" />
 
-    <!-- 第三方系统登录授权中的集成用户 -->
+    <!-- 请替换为真实集成用户 -->
     <add key="X-KDApi-UserName" value="Administrator" />
 
-    <!-- 应用 ID -->
-    <add key="X-KDApi-AppID" value="请替换" />
+    <!-- 请替换为真实应用 ID -->
+    <add key="X-KDApi-AppID" value="YOUR_APP_ID" />
 
-    <!-- 应用密钥 -->
-    <add key="X-KDApi-AppSec" value="请替换" />
+    <!-- 请替换为真实应用密钥 -->
+    <add key="X-KDApi-AppSec" value="123456" />
 
     <!-- 账套语系，简体中文通常为 2052 -->
     <add key="X-KDApi-LCID" value="2052" />
@@ -213,8 +210,8 @@ cp YiKdWebCfg/appsettings.example.xml YiKdWebCfg/appsettings.xml
     <!-- 启用多组织时可填组织编码 -->
     <add key="X-KDApi-OrgNum" value="100" />
 
-    <!-- 私有云通常以 K3Cloud/ 结尾 -->
-    <add key="X-KDApi-ServerUrl" value="https://example.com/K3Cloud/" />
+    <!-- 请替换为真实服务地址；私有云通常以 K3Cloud/ 结尾 -->
+    <add key="X-KDApi-ServerUrl" value="http://127.0.0.1/K3Cloud/" />
   </appSettings>
 </configuration>
 ```
@@ -236,7 +233,7 @@ cp YiKdWebCfg/appsettings.example.xml YiKdWebCfg/appsettings.xml
 私有云通常配置产品地址并以 `K3Cloud/` 结尾；部分公有云环境可能要求通过 `https://api.kingdee.com/galaxyapi/` 网关并使用 API 请求头签名。实际地址与认证规则应以目标环境和金蝶官方当前要求为准。各语言客户端均保留普通登录与 API 请求头签名能力。
 
 > [!IMPORTANT]
-> Go 不会像 C# `.csproj` 的 `CopyToOutputDirectory` 那样自动复制 XML。`NewClientFromConfig("YiKdWebCfg/appsettings.xml")` 的相对路径以程序当前工作目录为基准。部署时应显式带上配置文件、传入绝对路径，或改用代码/环境变量组装 `AppSettingsModel`。不建议用 `go:embed` 将生产密钥编译进可执行文件。
+> Go 不会像 C# `.csproj` 的 `CopyToOutputDirectory` 那样自动复制 XML。`NewClientFromConfig("YiKdWebCfg/appsettings.xml")` 的相对路径以程序当前工作目录为基准。部署时应显式带上配置文件、传入绝对路径，或从配置中心读取后组装 `AppSettingsModel`。不建议用 `go:embed` 将生产密钥编译进可执行文件。
 
 ## 4. 五分钟运行第一个示例
 
@@ -266,17 +263,34 @@ func main() {
 	}
 	defer client.Close()
 
+	formID := "SEC_User"
 	payload := `{
   "IsUserModelInit": "true",
   "Number": "Administrator",
   "IsSortBySeq": "false"
 }`
 
-	response, err := client.View("SEC_User", payload)
+	response, err := client.View(formID, payload)
 	if err != nil {
 		log.Fatalf("View 失败: %v\n服务端原始返回: %s", err, response)
 	}
-	fmt.Println(response)
+
+	loginRequestURL := client.ReturnLoginWebModel.RequestUrl
+	loginRequestBody := client.ReturnLoginWebModel.RealRequestBody
+	loginResponseBody := client.ReturnLoginWebModel.RealResponseBody
+	operationRequestURL := client.ReturnOperationWebModel.RequestUrl
+	operationRequestBody := client.ReturnOperationWebModel.RealRequestBody
+	operationResponseBody := client.ReturnOperationWebModel.RealResponseBody
+
+	fmt.Println("表单 ID（formID）：", formID)
+	fmt.Println("业务 JSON 参数（payload）：", payload)
+	fmt.Println("登录请求地址（loginRequestURL）：", loginRequestURL)
+	fmt.Println("登录请求报文（loginRequestBody）：", loginRequestBody)
+	fmt.Println("登录返回报文（loginResponseBody）：", loginResponseBody)
+	fmt.Println("业务请求地址（operationRequestURL）：", operationRequestURL)
+	fmt.Println("业务请求报文（operationRequestBody）：", operationRequestBody)
+	fmt.Println("业务返回报文（operationResponseBody）：", operationResponseBody)
+	fmt.Println("View 方法返回值（response）：", response)
 }
 ```
 
@@ -296,23 +310,23 @@ go run ./examples/readme help
 go run ./examples/readme sign-sha256
 ```
 
-| 命令 | 场景 | 截图 |
-| --- | --- | --- |
-| `module-install` | Go Modules 安装方式 | `00-go-modules-install.png` |
-| `sign-sha256` | SHA256 签名登录 + View | `01-sign-sha256.png` |
-| `sign-sha1` | SHA1 签名登录 + View | `02-sign-sha1.png` |
-| `app-secret` | AppSecret 登录 + View | `03-app-secret.png` |
-| `validate-login` | 明文密码验证登录 + View | `04-validate-login.png` |
-| `simple-passport` | CNF 简易账号本登录 + View | `05-simple-passport.png` |
-| `api-sign-headers` | API Sign Headers + View | `06-api-sign-headers.png` |
-| `dynamic-config` | 代码动态配置 | `07-dynamic-config.png` |
-| `custom-config-path` | 自定义 XML 路径 | `08-custom-config-path.png` |
-| `custom-webapi` | 自定义 WebAPI | `09-custom-webapi.png` |
-| `sso-v4` | SSO V4 URL | `10-sso-v4.png` |
-| `upload-file` | 文件分块上传 | `11-upload-file.png` |
-| `upload-progress` | 上传进度回调 | `12-upload-progress.png` |
-| `upload-base64` | Base64 分块上传 | `13-upload-base64.png` |
-| `validate-user-endecode` | DES 加密密码验证登录 + View | `14-validate-user-endecode.png` |
+| 命令 | 场景 |
+| --- | --- |
+| `module-install` | Go Modules 安装方式 |
+| `sign-sha256` | SHA256 签名登录 + View |
+| `sign-sha1` | SHA1 签名登录 + View |
+| `app-secret` | AppSecret 登录 + View |
+| `validate-login` | 明文密码验证登录 + View |
+| `simple-passport` | CNF 简易账号本登录 + View |
+| `api-sign-headers` | API Sign Headers + View |
+| `dynamic-config` | 代码动态配置 |
+| `custom-config-path` | 自定义 XML 路径 |
+| `custom-webapi` | 自定义 WebAPI |
+| `sso-v4` | SSO V4 URL |
+| `upload-file` | 文件分块上传 |
+| `upload-progress` | 上传进度回调 |
+| `upload-base64` | Base64 分块上传 |
+| `validate-user-endecode` | DES 加密密码验证登录 + View |
 
 ### 5.1 切换到自己的真实测试环境
 
@@ -346,7 +360,7 @@ go run ./examples/readme sign-sha256
 | `YIKD_CONFIG_PATH` | XML 配置文件路径 |
 | `YIKD_VALIDATE_DBID` | `ValidateLogin` 的账套 ID，未设置则用 XML 值 |
 | `YIKD_VALIDATE_USERNAME` | 验证登录用户，未设置则用 XML 值 |
-| `YIKD_VALIDATE_PASSWORD` | 验证登录密码；截图和输出会脱敏 |
+| `YIKD_VALIDATE_PASSWORD` | 验证登录密码；运行器输出会脱敏 |
 | `YIKD_VALIDATE_LCID` | 验证登录语系，未设置则用 XML 值 |
 | `YIKD_CNF_PATH` | Simple Passport 的真实 CNF 文件 |
 | `YIKD_UPLOAD_FILE` | 上传示例的源文件 |
@@ -402,12 +416,29 @@ func main() {
 	}
 	defer client.Close()
 
+	formID := "SEC_User"
 	payload := `{"IsUserModelInit":"true","Number":"Administrator","IsSortBySeq":"false"}`
-	response, err := client.View("SEC_User", payload)
+	response, err := client.View(formID, payload)
 	if err != nil {
 		log.Fatalf("%v\n%s", err, response)
 	}
-	fmt.Println(response)
+
+	loginRequestURL := client.ReturnLoginWebModel.RequestUrl
+	loginRequestBody := client.ReturnLoginWebModel.RealRequestBody
+	loginResponseBody := client.ReturnLoginWebModel.RealResponseBody
+	operationRequestURL := client.ReturnOperationWebModel.RequestUrl
+	operationRequestBody := client.ReturnOperationWebModel.RealRequestBody
+	operationResponseBody := client.ReturnOperationWebModel.RealResponseBody
+
+	fmt.Println("表单 ID（formID）：", formID)
+	fmt.Println("业务 JSON 参数（payload）：", payload)
+	fmt.Println("登录请求地址（loginRequestURL）：", loginRequestURL)
+	fmt.Println("登录请求报文（loginRequestBody）：", loginRequestBody)
+	fmt.Println("登录返回报文（loginResponseBody）：", loginResponseBody)
+	fmt.Println("业务请求地址（operationRequestURL）：", operationRequestURL)
+	fmt.Println("业务请求报文（operationRequestBody）：", operationRequestBody)
+	fmt.Println("业务返回报文（operationResponseBody）：", operationResponseBody)
+	fmt.Println("View 方法返回值（response）：", response)
 }
 ```
 
@@ -437,12 +468,29 @@ func main() {
 	}
 	defer client.Close()
 
+	formID := "SEC_User"
 	payload := `{"IsUserModelInit":"true","Number":"Administrator","IsSortBySeq":"false"}`
-	response, err := client.View("SEC_User", payload)
+	response, err := client.View(formID, payload)
 	if err != nil {
 		log.Fatalf("%v\n%s", err, response)
 	}
-	fmt.Println(response)
+
+	loginRequestURL := client.ReturnLoginWebModel.RequestUrl
+	loginRequestBody := client.ReturnLoginWebModel.RealRequestBody
+	loginResponseBody := client.ReturnLoginWebModel.RealResponseBody
+	operationRequestURL := client.ReturnOperationWebModel.RequestUrl
+	operationRequestBody := client.ReturnOperationWebModel.RealRequestBody
+	operationResponseBody := client.ReturnOperationWebModel.RealResponseBody
+
+	fmt.Println("表单 ID（formID）：", formID)
+	fmt.Println("业务 JSON 参数（payload）：", payload)
+	fmt.Println("登录请求地址（loginRequestURL）：", loginRequestURL)
+	fmt.Println("登录请求报文（loginRequestBody）：", loginRequestBody)
+	fmt.Println("登录返回报文（loginResponseBody）：", loginResponseBody)
+	fmt.Println("业务请求地址（operationRequestURL）：", operationRequestURL)
+	fmt.Println("业务请求报文（operationRequestBody）：", operationRequestBody)
+	fmt.Println("业务返回报文（operationResponseBody）：", operationResponseBody)
+	fmt.Println("View 方法返回值（response）：", response)
 }
 ```
 
@@ -472,12 +520,29 @@ func main() {
 	}
 	defer client.Close()
 
+	formID := "SEC_User"
 	payload := `{"IsUserModelInit":"true","Number":"Administrator","IsSortBySeq":"false"}`
-	response, err := client.View("SEC_User", payload)
+	response, err := client.View(formID, payload)
 	if err != nil {
 		log.Fatalf("%v\n%s", err, response)
 	}
-	fmt.Println(response)
+
+	loginRequestURL := client.ReturnLoginWebModel.RequestUrl
+	loginRequestBody := client.ReturnLoginWebModel.RealRequestBody
+	loginResponseBody := client.ReturnLoginWebModel.RealResponseBody
+	operationRequestURL := client.ReturnOperationWebModel.RequestUrl
+	operationRequestBody := client.ReturnOperationWebModel.RealRequestBody
+	operationResponseBody := client.ReturnOperationWebModel.RealResponseBody
+
+	fmt.Println("表单 ID（formID）：", formID)
+	fmt.Println("业务 JSON 参数（payload）：", payload)
+	fmt.Println("登录请求地址（loginRequestURL）：", loginRequestURL)
+	fmt.Println("登录请求报文（loginRequestBody）：", loginRequestBody)
+	fmt.Println("登录返回报文（loginResponseBody）：", loginResponseBody)
+	fmt.Println("业务请求地址（operationRequestURL）：", operationRequestURL)
+	fmt.Println("业务请求报文（operationRequestBody）：", operationRequestBody)
+	fmt.Println("业务返回报文（operationResponseBody）：", operationResponseBody)
+	fmt.Println("View 方法返回值（response）：", response)
 }
 ```
 
@@ -485,7 +550,7 @@ func main() {
 
 ### 6.4 ValidateLogin 账号密码验证登录
 
-密码从环境变量读取，不写入源码。
+下面使用 `123456` 作为密码占位值；复制后请替换成目标测试用户的真实密码。
 
 ```go
 package main
@@ -493,20 +558,17 @@ package main
 import (
 	"fmt"
 	"log"
-	"os"
 
 	yikdwebclient "gitee.com/lnsyzjw/yi-kd-web-client-go"
 )
 
 func main() {
-	settings, err := yikdwebclient.LoadAppSettings("YiKdWebCfg/appsettings.xml")
-	if err != nil {
-		log.Fatal(err)
-	}
-	password := os.Getenv("YIKD_VALIDATE_PASSWORD")
-	if password == "" {
-		log.Fatal("请先设置 YIKD_VALIDATE_PASSWORD")
-	}
+	serverURL := "http://127.0.0.1/K3Cloud/" // 请替换为真实服务地址
+	dataCenterID := "6979b9812f3f89" // 请替换为真实数据中心 ID
+	userName := "demo" // 请替换为真实用户名
+	password := "123456" // 请替换为目标测试用户的真实密码
+	languageID := 2052 // 请按目标环境语系替换
+	settings := &yikdwebclient.AppSettingsModel{XKDApiServerUrl: serverURL}
 
 	client, err := yikdwebclient.NewClient(
 		yikdwebclient.WithAppSettings(settings),
@@ -518,34 +580,49 @@ func main() {
 	defer client.Close()
 
 	client.ValidateLoginSettingsModel = &yikdwebclient.ValidateLoginSettingsModel{
-		Url:      settings.XKDApiServerUrl,
-		DbId:     settings.XKDApiAcctID,
-		UserName: settings.XKDApiUserName,
+		Url:      serverURL,
+		DbId:     dataCenterID,
+		UserName: userName,
 		Password: password,
-		Lcid:     2052,
+		Lcid:     languageID,
 	}
 
+	formID := "SEC_User"
 	payload := `{"IsUserModelInit":"true","Number":"Administrator","IsSortBySeq":"false"}`
-	response, err := client.View("SEC_User", payload)
+	response, err := client.View(formID, payload)
 	if err != nil {
 		log.Fatalf("%v\n%s", err, response)
 	}
-	fmt.Println(response)
+
+	loginRequestURL := client.ReturnLoginWebModel.RequestUrl
+	loginRequestBody := client.ReturnLoginWebModel.RealRequestBody
+	loginResponseBody := client.ReturnLoginWebModel.RealResponseBody
+	operationRequestURL := client.ReturnOperationWebModel.RequestUrl
+	operationRequestBody := client.ReturnOperationWebModel.RealRequestBody
+	operationResponseBody := client.ReturnOperationWebModel.RealResponseBody
+
+	fmt.Println("服务地址（serverURL）：", serverURL)
+	fmt.Println("数据中心 ID（dataCenterID）：", dataCenterID)
+	fmt.Println("用户名（userName）：", userName)
+	fmt.Println("密码（password）：", password)
+	fmt.Println("语系（languageID）：", languageID)
+	fmt.Println("表单 ID（formID）：", formID)
+	fmt.Println("业务 JSON 参数（payload）：", payload)
+	fmt.Println("登录请求地址（loginRequestURL）：", loginRequestURL)
+	fmt.Println("登录请求报文（loginRequestBody）：", loginRequestBody)
+	fmt.Println("登录返回报文（loginResponseBody）：", loginResponseBody)
+	fmt.Println("业务请求地址（operationRequestURL）：", operationRequestURL)
+	fmt.Println("业务请求报文（operationRequestBody）：", operationRequestBody)
+	fmt.Println("业务返回报文（operationResponseBody）：", operationResponseBody)
+	fmt.Println("View 方法返回值（response）：", response)
 }
-```
-
-PowerShell 中仅对当前会话设置密码：
-
-```powershell
-$env:YIKD_VALIDATE_PASSWORD = "测试账号密码"
-go run .
 ```
 
 ![ValidateLogin 与 View 实际运行输出](docs/screenshots/04-validate-login.png)
 
 ### 6.5 ValidateUserEnDeCode 加密密码验证登录
 
-该模式为兼容旧协议保留。程序在内存中对环境变量中的密码进行协议要求的编码。
+该模式为兼容旧协议保留。客户端会在内部对这里定义的用户名和密码执行协议要求的编码，不要在调用前重复编码。
 
 ```go
 package main
@@ -553,24 +630,17 @@ package main
 import (
 	"fmt"
 	"log"
-	"os"
 
 	yikdwebclient "gitee.com/lnsyzjw/yi-kd-web-client-go"
 )
 
 func main() {
-	settings, err := yikdwebclient.LoadAppSettings("YiKdWebCfg/appsettings.xml")
-	if err != nil {
-		log.Fatal(err)
-	}
-	password := os.Getenv("YIKD_VALIDATE_PASSWORD")
-	if password == "" {
-		log.Fatal("请先设置 YIKD_VALIDATE_PASSWORD")
-	}
-	encodedPassword, err := yikdwebclient.Encode(password)
-	if err != nil {
-		log.Fatal(err)
-	}
+	serverURL := "http://127.0.0.1/K3Cloud/" // 请替换为真实服务地址
+	dataCenterID := "6979b9812f3f89" // 请替换为真实数据中心 ID
+	userName := "demo" // 请替换为真实用户名
+	password := "123456" // 请替换为目标测试用户的真实密码
+	languageID := 2052 // 请按目标环境语系替换
+	settings := &yikdwebclient.AppSettingsModel{XKDApiServerUrl: serverURL}
 
 	client, err := yikdwebclient.NewClient(
 		yikdwebclient.WithAppSettings(settings),
@@ -582,19 +652,41 @@ func main() {
 	defer client.Close()
 
 	client.ValidateLoginSettingsModel = &yikdwebclient.ValidateLoginSettingsModel{
-		Url:      settings.XKDApiServerUrl,
-		DbId:     settings.XKDApiAcctID,
-		UserName: settings.XKDApiUserName,
-		Password: encodedPassword,
-		Lcid:     2052,
+		Url:      serverURL,
+		DbId:     dataCenterID,
+		UserName: userName,
+		Password: password,
+		Lcid:     languageID,
 	}
 
+	formID := "SEC_User"
 	payload := `{"IsUserModelInit":"true","Number":"Administrator","IsSortBySeq":"false"}`
-	response, err := client.View("SEC_User", payload)
+	response, err := client.View(formID, payload)
 	if err != nil {
 		log.Fatalf("%v\n%s", err, response)
 	}
-	fmt.Println(response)
+
+	loginRequestURL := client.ReturnLoginWebModel.RequestUrl
+	loginRequestBody := client.ReturnLoginWebModel.RealRequestBody
+	loginResponseBody := client.ReturnLoginWebModel.RealResponseBody
+	operationRequestURL := client.ReturnOperationWebModel.RequestUrl
+	operationRequestBody := client.ReturnOperationWebModel.RealRequestBody
+	operationResponseBody := client.ReturnOperationWebModel.RealResponseBody
+
+	fmt.Println("服务地址（serverURL）：", serverURL)
+	fmt.Println("数据中心 ID（dataCenterID）：", dataCenterID)
+	fmt.Println("用户名（userName）：", userName)
+	fmt.Println("密码（password）：", password)
+	fmt.Println("语系（languageID）：", languageID)
+	fmt.Println("表单 ID（formID）：", formID)
+	fmt.Println("业务 JSON 参数（payload）：", payload)
+	fmt.Println("登录请求地址（loginRequestURL）：", loginRequestURL)
+	fmt.Println("登录请求报文（loginRequestBody）：", loginRequestBody)
+	fmt.Println("登录返回报文（loginResponseBody）：", loginResponseBody)
+	fmt.Println("业务请求地址（operationRequestURL）：", operationRequestURL)
+	fmt.Println("业务请求报文（operationRequestBody）：", operationRequestBody)
+	fmt.Println("业务返回报文（operationResponseBody）：", operationResponseBody)
+	fmt.Println("View 方法返回值（response）：", response)
 }
 ```
 
@@ -610,20 +702,15 @@ package main
 import (
 	"fmt"
 	"log"
-	"os"
 
 	yikdwebclient "gitee.com/lnsyzjw/yi-kd-web-client-go"
 )
 
 func main() {
-	settings, err := yikdwebclient.LoadAppSettings("YiKdWebCfg/appsettings.xml")
-	if err != nil {
-		log.Fatal(err)
-	}
-	cnfPath := os.Getenv("YIKD_CNF_PATH")
-	if cnfPath == "" {
-		log.Fatal("请先设置 YIKD_CNF_PATH")
-	}
+	serverURL := "http://127.0.0.1/K3Cloud/" // 请替换为真实服务地址
+	cnfPath := "D:/secure/API测试.cnf" // 请替换为目标环境生成的真实 CNF 文件
+	languageID := 2052 // 请按目标环境语系替换
+	settings := &yikdwebclient.AppSettingsModel{XKDApiServerUrl: serverURL}
 
 	client, err := yikdwebclient.NewClient(
 		yikdwebclient.WithAppSettings(settings),
@@ -635,28 +722,49 @@ func main() {
 	defer client.Close()
 
 	client.LoginBySimplePassportModel = &yikdwebclient.LoginBySimplePassportModel{
-		Url:                  settings.XKDApiServerUrl,
+		Url:                  serverURL,
 		CnfFilePath:          cnfPath,
-		Lcid:                 2052,
+		Lcid:                 languageID,
 		BySimplePassportType: yikdwebclient.SimplePassportCnfFile,
 	}
 
+	formID := "SEC_User"
 	payload := `{"IsUserModelInit":"true","Number":"Administrator","IsSortBySeq":"false"}`
-	response, err := client.View("SEC_User", payload)
+	response, err := client.View(formID, payload)
 	if err != nil {
 		log.Fatalf("%v\n%s", err, response)
 	}
-	fmt.Println(response)
+
+	loginRequestURL := client.ReturnLoginWebModel.RequestUrl
+	loginRequestBody := client.ReturnLoginWebModel.RealRequestBody
+	loginResponseBody := client.ReturnLoginWebModel.RealResponseBody
+	operationRequestURL := client.ReturnOperationWebModel.RequestUrl
+	operationRequestBody := client.ReturnOperationWebModel.RealRequestBody
+	operationResponseBody := client.ReturnOperationWebModel.RealResponseBody
+
+	fmt.Println("服务地址（serverURL）：", serverURL)
+	fmt.Println("CNF 文件（cnfPath）：", cnfPath)
+	fmt.Println("语系（languageID）：", languageID)
+	fmt.Println("表单 ID（formID）：", formID)
+	fmt.Println("业务 JSON 参数（payload）：", payload)
+	fmt.Println("登录请求地址（loginRequestURL）：", loginRequestURL)
+	fmt.Println("登录请求报文（loginRequestBody）：", loginRequestBody)
+	fmt.Println("登录返回报文（loginResponseBody）：", loginResponseBody)
+	fmt.Println("业务请求地址（operationRequestURL）：", operationRequestURL)
+	fmt.Println("业务请求报文（operationRequestBody）：", operationRequestBody)
+	fmt.Println("业务返回报文（operationResponseBody）：", operationResponseBody)
+	fmt.Println("View 方法返回值（response）：", response)
 }
 ```
 
 如果已在安全配置中保存 CNF 的 Base64 值，可改为：
 
 ```go
+base64Passport := "请替换为真实 CNF 的 Base64 内容" // 请替换为目标环境的真实值
 client.LoginBySimplePassportModel = &yikdwebclient.LoginBySimplePassportModel{
-	Url:                     settings.XKDApiServerUrl,
-	SimplePassportForBase64: os.Getenv("YIKD_CNF_BASE64"),
-	Lcid:                    2052,
+	Url:                     serverURL,
+	SimplePassportForBase64: base64Passport,
+	Lcid:                    languageID,
 	BySimplePassportType:    yikdwebclient.SimplePassportForBase64,
 }
 ```
@@ -687,16 +795,25 @@ func main() {
 	}
 	defer client.Close()
 
+	formID := "SEC_User"
 	payload := `{"IsUserModelInit":"true","Number":"Administrator","IsSortBySeq":"false"}`
-	response, err := client.View("SEC_User", payload)
+	response, err := client.View(formID, payload)
 	if err != nil {
 		log.Fatalf("%v\n%s", err, response)
 	}
 
-	fmt.Println("实际签名头:")
-	fmt.Println(client.RequestHeadersString)
-	fmt.Println("业务返回:")
-	fmt.Println(response)
+	requestHeaders := client.RequestHeadersString
+	operationRequestURL := client.ReturnOperationWebModel.RequestUrl
+	operationRequestBody := client.ReturnOperationWebModel.RealRequestBody
+	operationResponseBody := client.ReturnOperationWebModel.RealResponseBody
+
+	fmt.Println("表单 ID（formID）：", formID)
+	fmt.Println("业务 JSON 参数（payload）：", payload)
+	fmt.Println("实际签名请求头（requestHeaders）：", requestHeaders)
+	fmt.Println("业务请求地址（operationRequestURL）：", operationRequestURL)
+	fmt.Println("业务请求报文（operationRequestBody）：", operationRequestBody)
+	fmt.Println("业务返回报文（operationResponseBody）：", operationResponseBody)
+	fmt.Println("View 方法返回值（response）：", response)
 }
 ```
 
@@ -712,28 +829,27 @@ package main
 import (
 	"fmt"
 	"log"
-	"os"
 
 	yikdwebclient "gitee.com/lnsyzjw/yi-kd-web-client-go"
 )
 
-func required(name string) string {
-	value := os.Getenv(name)
-	if value == "" {
-		log.Fatalf("请设置 %s", name)
-	}
-	return value
-}
-
 func main() {
+	dataCenterID := "替换为数据中心 ID" // 请替换为真实数据中心 ID
+	appID := "替换为应用 ID" // 请替换为真实应用 ID
+	appSecret := "123456" // 请替换为真实应用密钥
+	userName := "Administrator" // 请替换为真实集成用户
+	serverURL := "http://127.0.0.1/K3Cloud/" // 请替换为真实服务地址
+	organizationNumber := "100" // 请替换为真实组织编码；不需要时留空
+	languageID := "2052" // 请按目标环境语系替换
+
 	settings := &yikdwebclient.AppSettingsModel{
-		XKDApiAcctID:    required("YIKD_ACCT_ID"),
-		XKDApiAppID:     required("YIKD_APP_ID"),
-		XKDApiAppSec:    required("YIKD_APP_SECRET"),
-		XKDApiUserName:  required("YIKD_USER_NAME"),
-		XKDApiLCID:      "2052",
-		XKDApiServerUrl: required("YIKD_SERVER_URL"),
-		XKDApiOrgNum:    os.Getenv("YIKD_ORG_NUM"),
+		XKDApiAcctID:    dataCenterID,
+		XKDApiAppID:     appID,
+		XKDApiAppSec:    appSecret,
+		XKDApiUserName:  userName,
+		XKDApiLCID:      languageID,
+		XKDApiServerUrl: serverURL,
+		XKDApiOrgNum:    organizationNumber,
 	}
 
 	client, err := yikdwebclient.NewClient(
@@ -745,12 +861,36 @@ func main() {
 	}
 	defer client.Close()
 
+	formID := "SEC_User"
 	payload := `{"IsUserModelInit":"true","Number":"Administrator","IsSortBySeq":"false"}`
-	response, err := client.View("SEC_User", payload)
+	response, err := client.View(formID, payload)
 	if err != nil {
 		log.Fatalf("%v\n%s", err, response)
 	}
-	fmt.Println(response)
+
+	loginRequestURL := client.ReturnLoginWebModel.RequestUrl
+	loginRequestBody := client.ReturnLoginWebModel.RealRequestBody
+	loginResponseBody := client.ReturnLoginWebModel.RealResponseBody
+	operationRequestURL := client.ReturnOperationWebModel.RequestUrl
+	operationRequestBody := client.ReturnOperationWebModel.RealRequestBody
+	operationResponseBody := client.ReturnOperationWebModel.RealResponseBody
+
+	fmt.Println("数据中心 ID：", settings.XKDApiAcctID)
+	fmt.Println("集成用户：", settings.XKDApiUserName)
+	fmt.Println("应用 ID：", settings.XKDApiAppID)
+	fmt.Println("应用密钥：", settings.XKDApiAppSec)
+	fmt.Println("语系：", settings.XKDApiLCID)
+	fmt.Println("组织编码：", settings.XKDApiOrgNum)
+	fmt.Println("服务地址：", settings.XKDApiServerUrl)
+	fmt.Println("表单 ID（formID）：", formID)
+	fmt.Println("业务 JSON 参数（payload）：", payload)
+	fmt.Println("登录请求地址（loginRequestURL）：", loginRequestURL)
+	fmt.Println("登录请求报文（loginRequestBody）：", loginRequestBody)
+	fmt.Println("登录返回报文（loginResponseBody）：", loginResponseBody)
+	fmt.Println("业务请求地址（operationRequestURL）：", operationRequestURL)
+	fmt.Println("业务请求报文（operationRequestBody）：", operationRequestBody)
+	fmt.Println("业务返回报文（operationResponseBody）：", operationResponseBody)
+	fmt.Println("View 方法返回值（response）：", response)
 }
 ```
 
@@ -782,12 +922,30 @@ func main() {
 	}
 	defer client.Close()
 
+	formID := "SEC_User"
 	payload := `{"IsUserModelInit":"true","Number":"Administrator","IsSortBySeq":"false"}`
-	response, err := client.View("SEC_User", payload)
+	response, err := client.View(formID, payload)
 	if err != nil {
 		log.Fatalf("%v\n%s", err, response)
 	}
-	fmt.Println(response)
+
+	loginRequestURL := client.ReturnLoginWebModel.RequestUrl
+	loginRequestBody := client.ReturnLoginWebModel.RealRequestBody
+	loginResponseBody := client.ReturnLoginWebModel.RealResponseBody
+	operationRequestURL := client.ReturnOperationWebModel.RequestUrl
+	operationRequestBody := client.ReturnOperationWebModel.RealRequestBody
+	operationResponseBody := client.ReturnOperationWebModel.RealResponseBody
+
+	fmt.Println("配置文件路径（configPath）：", *configPath)
+	fmt.Println("表单 ID（formID）：", formID)
+	fmt.Println("业务 JSON 参数（payload）：", payload)
+	fmt.Println("登录请求地址（loginRequestURL）：", loginRequestURL)
+	fmt.Println("登录请求报文（loginRequestBody）：", loginRequestBody)
+	fmt.Println("登录返回报文（loginResponseBody）：", loginResponseBody)
+	fmt.Println("业务请求地址（operationRequestURL）：", operationRequestURL)
+	fmt.Println("业务请求报文（operationRequestBody）：", operationRequestBody)
+	fmt.Println("业务返回报文（operationResponseBody）：", operationResponseBody)
+	fmt.Println("View 方法返回值（response）：", response)
 }
 ```
 
@@ -801,7 +959,7 @@ go run . -config /secure/yikd/appsettings.xml
 
 ### 6.10 请求与返回诊断
 
-下面是可独立运行的诊断示例。日志系统中应对请求体、返回体和头进行脱敏，不要直接在生产日志打印密钥、密码或 Cookie。
+下面是可独立运行的诊断示例，会完整输出当前示例生成的请求体、返回体和请求头。
 
 ```go
 package main
@@ -830,10 +988,14 @@ func main() {
 	}
 	defer client.Close()
 
-	response, err := client.View("SEC_User", `{"Number":"Administrator"}`)
+	formID := "SEC_User"
+	payload := `{"IsUserModelInit":"true","Number":"Administrator","IsSortBySeq":"false"}`
+	response, err := client.View(formID, payload)
 	if err != nil {
 		log.Printf("调用错误: %v", err)
 	}
+	fmt.Println("表单 ID（formID）：", formID)
+	fmt.Println("业务 JSON 参数（payload）：", payload)
 	printWebModel("登录请求", client.ReturnLoginWebModel)
 	fmt.Println("请求头:", client.RequestHeadersString)
 	printWebModel("业务请求", client.ReturnOperationWebModel)
@@ -845,13 +1007,25 @@ func main() {
 
 ### 7.1 JSON 是业务参数，客户端负责外层包装
 
-标准动态表单方法接收官方文档中的业务 JSON，库内部再构造 `parameters`、`timestamp`、`rid` 等最终报文。例如 View：
+标准动态表单方法接收官方文档中的业务 JSON，库内部再构造 `parameters`、`timestamp`、`rid` 等最终报文。下面以及 7.3～7.6 的短片段假定已经按第 4 节创建好 `client`，但每次请求仍会完整定义业务参数并输出本次真实报文：
 
 ```go
-response, err := client.View(
-	"BD_Customer",
-	`{"CreateOrgId":0,"Number":"CUST001","Id":""}`,
-)
+formID := "BD_Customer"
+payload := `{"CreateOrgId":0,"Number":"CUST001","Id":"","IsSortBySeq":"false"}`
+response, err := client.View(formID, payload)
+if err != nil {
+	log.Fatalf("%v\n%s", err, response)
+}
+
+fmt.Println("表单 ID（formID）：", formID)
+fmt.Println("业务 JSON 参数（payload）：", payload)
+fmt.Println("登录请求地址：", client.ReturnLoginWebModel.RequestUrl)
+fmt.Println("登录请求报文：", client.ReturnLoginWebModel.RealRequestBody)
+fmt.Println("登录返回报文：", client.ReturnLoginWebModel.RealResponseBody)
+fmt.Println("业务请求地址：", client.ReturnOperationWebModel.RequestUrl)
+fmt.Println("业务请求报文：", client.ReturnOperationWebModel.RealRequestBody)
+fmt.Println("业务返回报文：", client.ReturnOperationWebModel.RealResponseBody)
+fmt.Println("View 方法返回值（response）：", response)
 ```
 
 不要在这个 JSON 外面自己再加一层 `parameters`，除非调用的是明确要求原始 JSON 的方法。
@@ -926,6 +1100,18 @@ payload := `{
   "Limit": 10
 }`
 response, err := client.ExecuteBillQuery(payload)
+if err != nil {
+	log.Fatalf("%v\n%s", err, response)
+}
+
+fmt.Println("业务 JSON 参数（payload）：", payload)
+fmt.Println("登录请求地址：", client.ReturnLoginWebModel.RequestUrl)
+fmt.Println("登录请求报文：", client.ReturnLoginWebModel.RealRequestBody)
+fmt.Println("登录返回报文：", client.ReturnLoginWebModel.RealResponseBody)
+fmt.Println("业务请求地址：", client.ReturnOperationWebModel.RequestUrl)
+fmt.Println("业务请求报文：", client.ReturnOperationWebModel.RealRequestBody)
+fmt.Println("业务返回报文：", client.ReturnOperationWebModel.RealResponseBody)
+fmt.Println("ExecuteBillQuery 方法返回值（response）：", response)
 ```
 
 ### 7.4 通用操作与原始 JSON
@@ -933,11 +1119,24 @@ response, err := client.ExecuteBillQuery(payload)
 `ExecuteOperation` 的参数顺序与 C# 主项目一致：`formID, opNumber, payload`。
 
 ```go
-response, err := client.ExecuteOperation(
-	"SAL_SaleOrder",
-	"Forbid",
-	`{"CreateOrgId":0,"Numbers":["SAL0001"]}`,
-)
+formID := "SAL_SaleOrder"
+operationNumber := "Forbid"
+payload := `{"CreateOrgId":0,"Numbers":["SAL0001"]}`
+response, err := client.ExecuteOperation(formID, operationNumber, payload)
+if err != nil {
+	log.Fatalf("%v\n%s", err, response)
+}
+
+fmt.Println("表单 ID（formID）：", formID)
+fmt.Println("操作编码（operationNumber）：", operationNumber)
+fmt.Println("业务 JSON 参数（payload）：", payload)
+fmt.Println("登录请求地址：", client.ReturnLoginWebModel.RequestUrl)
+fmt.Println("登录请求报文：", client.ReturnLoginWebModel.RealRequestBody)
+fmt.Println("登录返回报文：", client.ReturnLoginWebModel.RealResponseBody)
+fmt.Println("业务请求地址：", client.ReturnOperationWebModel.RequestUrl)
+fmt.Println("业务请求报文：", client.ReturnOperationWebModel.RealRequestBody)
+fmt.Println("业务返回报文：", client.ReturnOperationWebModel.RealResponseBody)
+fmt.Println("ExecuteOperation 方法返回值（response）：", response)
 ```
 
 下列方法按服务端要求直接发送原始 JSON，不再套标准 `parameters` 包装：
@@ -953,18 +1152,37 @@ response, err := client.ExecuteOperation(
 业务方法默认每次自动登录且自动登出。Go 版用 `CallOption` 代替 C# 的可选布尔参数：
 
 ```go
+formID := "BD_Customer"
+payload := `{"CreateOrgId":0,"Number":"CUST001","Id":"","IsSortBySeq":"false"}`
 response, err := client.View(
-	"BD_Customer",
-	`{"Number":"CUST001"}`,
-	yikdwebclient.WithAutoLogin(false),
+	formID,
+	payload,
 	yikdwebclient.WithAutoLogout(false),
 )
+if err != nil {
+	log.Fatalf("%v\n%s", err, response)
+}
+
+if err := client.Logout(); err != nil {
+	log.Print(err)
+}
+
+fmt.Println("表单 ID（formID）：", formID)
+fmt.Println("业务 JSON 参数（payload）：", payload)
+fmt.Println("登录请求地址：", client.ReturnLoginWebModel.RequestUrl)
+fmt.Println("登录请求报文：", client.ReturnLoginWebModel.RealRequestBody)
+fmt.Println("登录返回报文：", client.ReturnLoginWebModel.RealResponseBody)
+fmt.Println("业务请求地址：", client.ReturnOperationWebModel.RequestUrl)
+fmt.Println("业务请求报文：", client.ReturnOperationWebModel.RealRequestBody)
+fmt.Println("业务返回报文：", client.ReturnOperationWebModel.RealResponseBody)
+fmt.Println("View 方法返回值（response）：", response)
 ```
 
 需要在同一 Cookie 会话中连续调用时：
 
 ```go
-if _, err := client.Login(); err != nil {
+loginExchange, err := client.Login()
+if err != nil {
 	log.Fatal(err)
 }
 
@@ -973,15 +1191,45 @@ options := []yikdwebclient.CallOption{
 	yikdwebclient.WithAutoLogout(false),
 }
 
-if _, err := client.View("BD_Customer", `{"Number":"CUST001"}`, options...); err != nil {
-	log.Print(err)
+customerFormID := "BD_Customer"
+customerPayload := `{"CreateOrgId":0,"Number":"CUST001","Id":"","IsSortBySeq":"false"}`
+customerResponse, err := client.View(customerFormID, customerPayload, options...)
+if err != nil {
+	log.Fatalf("%v\n%s", err, customerResponse)
 }
-if _, err := client.View("BD_MATERIAL", `{"Number":"MATERIAL001"}`, options...); err != nil {
-	log.Print(err)
+customerRequestURL := client.ReturnOperationWebModel.RequestUrl
+customerRequestBody := client.ReturnOperationWebModel.RealRequestBody
+customerResponseBody := client.ReturnOperationWebModel.RealResponseBody
+
+materialFormID := "BD_MATERIAL"
+materialPayload := `{"CreateOrgId":0,"Number":"MATERIAL001","Id":"","IsSortBySeq":"false"}`
+materialResponse, err := client.View(materialFormID, materialPayload, options...)
+if err != nil {
+	log.Fatalf("%v\n%s", err, materialResponse)
 }
+materialRequestURL := client.ReturnOperationWebModel.RequestUrl
+materialRequestBody := client.ReturnOperationWebModel.RealRequestBody
+materialResponseBody := client.ReturnOperationWebModel.RealResponseBody
+
 if err := client.Logout(); err != nil {
 	log.Print(err)
 }
+
+fmt.Println("登录请求地址：", loginExchange.RequestUrl)
+fmt.Println("登录请求报文：", loginExchange.RealRequestBody)
+fmt.Println("登录返回报文：", loginExchange.RealResponseBody)
+fmt.Println("客户表单 ID：", customerFormID)
+fmt.Println("客户业务 JSON：", customerPayload)
+fmt.Println("客户业务请求地址：", customerRequestURL)
+fmt.Println("客户业务请求报文：", customerRequestBody)
+fmt.Println("客户业务返回报文：", customerResponseBody)
+fmt.Println("客户 View 返回值：", customerResponse)
+fmt.Println("物料表单 ID：", materialFormID)
+fmt.Println("物料业务 JSON：", materialPayload)
+fmt.Println("物料业务请求地址：", materialRequestURL)
+fmt.Println("物料业务请求报文：", materialRequestBody)
+fmt.Println("物料业务返回报文：", materialResponseBody)
+fmt.Println("物料 View 返回值：", materialResponse)
 ```
 
 `Close` 仅关闭 Go 客户端对象的后续使用，不代替服务端 `Logout`。
@@ -1012,12 +1260,29 @@ client, err := yikdwebclient.NewClient(
 ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 defer cancel()
 
+formID := "SAL_SaleOrder"
+operationNumber := "Forbid"
+payload := `{"CreateOrgId":0,"Numbers":["SAL0001"]}`
 response, err := client.ExecuteOperationContext(
 	ctx,
-	"SAL_SaleOrder",
-	"Forbid",
-	`{"Numbers":["SAL0001"]}`,
+	formID,
+	operationNumber,
+	payload,
 )
+if err != nil {
+	log.Fatalf("%v\n%s", err, response)
+}
+
+fmt.Println("表单 ID：", formID)
+fmt.Println("操作编码：", operationNumber)
+fmt.Println("业务 JSON 参数：", payload)
+fmt.Println("登录请求地址：", client.ReturnLoginWebModel.RequestUrl)
+fmt.Println("登录请求报文：", client.ReturnLoginWebModel.RealRequestBody)
+fmt.Println("登录返回报文：", client.ReturnLoginWebModel.RealResponseBody)
+fmt.Println("业务请求地址：", client.ReturnOperationWebModel.RequestUrl)
+fmt.Println("业务请求报文：", client.ReturnOperationWebModel.RealRequestBody)
+fmt.Println("业务返回报文：", client.ReturnOperationWebModel.RealResponseBody)
+fmt.Println("ExecuteOperationContext 方法返回值：", response)
 ```
 
 ### 7.7 错误类型
@@ -1059,11 +1324,27 @@ func main() {
 		log.Fatal(err)
 	}
 
-	fmt.Println("ArgJSON:", helper.ArgJSON)
-	fmt.Println("ArgJSONBase64:", helper.ArgJSONBase64)
-	fmt.Println("HTML5:", urls.HTML5URL)
-	fmt.Println("WPF:", urls.WPFURL)
-	fmt.Println("Silverlight:", urls.SilverlightURL)
+	dataCenterID := helper.SimplePassportLoginArg.DbID
+	appID := helper.SimplePassportLoginArg.AppID
+	loginUserName := helper.SimplePassportLoginArg.Username
+	timestamp := helper.Timestamp
+	signedData := helper.SimplePassportLoginArg.SignedData
+	argumentJSON := helper.ArgJSON
+	argumentBase64 := helper.ArgJSONBase64
+	html5URL := urls.HTML5URL
+	wpfURL := urls.WPFURL
+	silverlightURL := urls.SilverlightURL
+
+	fmt.Println("数据中心 ID（dataCenterID）：", dataCenterID)
+	fmt.Println("应用 ID（appID）：", appID)
+	fmt.Println("登录用户名（loginUserName）：", loginUserName)
+	fmt.Println("时间戳（timestamp）：", timestamp)
+	fmt.Println("签名（signedData）：", signedData)
+	fmt.Println("原始 SSO 参数 JSON（argumentJSON）：", argumentJSON)
+	fmt.Println("Base64 参数（argumentBase64）：", argumentBase64)
+	fmt.Println("HTML5 入口（html5URL）：", html5URL)
+	fmt.Println("WPF 入口（wpfURL）：", wpfURL)
+	fmt.Println("Silverlight 入口（silverlightURL）：", silverlightURL)
 }
 ```
 
@@ -1073,17 +1354,39 @@ func main() {
 
 ```go
 v3, err := helper.GetSSOURLsV3(userName, "")
+if err != nil {
+	log.Fatal(err)
+}
 v2, err := helper.GetSSOURLsV2(userName, "")
+if err != nil {
+	log.Fatal(err)
+}
 v1, err := helper.GetSSOURLsV1(userName, "")
+if err != nil {
+	log.Fatal(err)
+}
+
+fmt.Println("V3 HTML5 入口：", v3.HTML5URL)
+fmt.Println("V2 HTML5 入口：", v2.HTML5URL)
+fmt.Println("V1 HTML5 入口：", v1.HTML5URL)
 ```
 
 生成并执行 V4 退出：
 
 ```go
 logout, err := helper.GetSSOLogoutAP0V4(userName, "")
-if err == nil {
-	_, err = helper.SSOExecuteLogout(*logout)
+if err != nil {
+	log.Fatal(err)
 }
+logoutResponse, err := helper.SSOExecuteLogout(*logout)
+if err != nil {
+	log.Fatal(err)
+}
+
+fmt.Println("登出用户名：", userName)
+fmt.Println("登出地址：", logout.RequestLogoutURL)
+fmt.Println("登出请求参数 ap0：", logout.AP0)
+fmt.Println("登出响应：", logoutResponse)
 ```
 
 SSO URL 包含可用于登录的签名参数，不应记录到公开日志、分析系统或工单截图中。
@@ -1136,12 +1439,27 @@ func main() {
 		log.Fatal(err)
 	}
 
-	fmt.Println("服务路径:", stub.GetCustomServicesStubpathURL())
 	response, err := client.CustomBusinessServiceByParametersAndStubpath(string(payload), stub)
 	if err != nil {
 		log.Fatalf("%v\n%s", err, response)
 	}
-	fmt.Println(response)
+
+	loginRequestURL := client.ReturnLoginWebModel.RequestUrl
+	loginRequestBody := client.ReturnLoginWebModel.RealRequestBody
+	loginResponseBody := client.ReturnLoginWebModel.RealResponseBody
+	operationRequestURL := client.ReturnOperationWebModel.RequestUrl
+	operationRequestBody := client.ReturnOperationWebModel.RealRequestBody
+	operationResponseBody := client.ReturnOperationWebModel.RealResponseBody
+
+	fmt.Println("服务路径：", stub.GetCustomServicesStubpathURL())
+	fmt.Println("接口参数 JSON（payload）：", string(payload))
+	fmt.Println("登录请求地址（loginRequestURL）：", loginRequestURL)
+	fmt.Println("登录请求报文（loginRequestBody）：", loginRequestBody)
+	fmt.Println("登录返回报文（loginResponseBody）：", loginResponseBody)
+	fmt.Println("业务请求地址（operationRequestURL）：", operationRequestURL)
+	fmt.Println("业务请求报文（operationRequestBody）：", operationRequestBody)
+	fmt.Println("业务返回报文（operationResponseBody）：", operationResponseBody)
+	fmt.Println("自定义接口返回值（response）：", response)
 }
 ```
 
@@ -1223,7 +1541,19 @@ func main() {
 	if err != nil {
 		log.Fatalf("%v\n%s", err, response)
 	}
-	fmt.Println(response)
+
+	fmt.Println("待上传文件：", "test-data/upload-demo.txt")
+	fmt.Println("目标表单：", template.Data.FormId)
+	fmt.Println("单据内码：", template.Data.InterId)
+	fmt.Println("单据编号：", template.Data.BillNO)
+	fmt.Println("分块大小：", yikdwebclient.DefaultChunkSize)
+	fmt.Println("登录请求地址：", client.ReturnLoginWebModel.RequestUrl)
+	fmt.Println("登录请求报文：", client.ReturnLoginWebModel.RealRequestBody)
+	fmt.Println("登录返回报文：", client.ReturnLoginWebModel.RealResponseBody)
+	fmt.Println("最后一块请求地址：", client.ReturnOperationWebModel.RequestUrl)
+	fmt.Println("最后一块请求报文：", client.ReturnOperationWebModel.RealRequestBody)
+	fmt.Println("最后一块返回报文：", client.ReturnOperationWebModel.RealResponseBody)
+	fmt.Println("上传方法返回值：", response)
 }
 ```
 
@@ -1277,7 +1607,19 @@ func main() {
 	if err != nil {
 		log.Fatalf("%v\n%s", err, response)
 	}
-	fmt.Println(response)
+
+	fmt.Println("待上传文件：", "test-data/upload-demo.txt")
+	fmt.Println("目标表单：", template.Data.FormId)
+	fmt.Println("单据内码：", template.Data.InterId)
+	fmt.Println("单据编号：", template.Data.BillNO)
+	fmt.Println("分块大小：", 1024*1024)
+	fmt.Println("登录请求地址：", client.ReturnLoginWebModel.RequestUrl)
+	fmt.Println("登录请求报文：", client.ReturnLoginWebModel.RealRequestBody)
+	fmt.Println("登录返回报文：", client.ReturnLoginWebModel.RealResponseBody)
+	fmt.Println("最后一块请求地址：", client.ReturnOperationWebModel.RequestUrl)
+	fmt.Println("最后一块请求报文：", client.ReturnOperationWebModel.RealRequestBody)
+	fmt.Println("最后一块返回报文：", client.ReturnOperationWebModel.RealResponseBody)
+	fmt.Println("上传方法返回值：", response)
 }
 ```
 
@@ -1331,7 +1673,20 @@ func main() {
 	if err != nil {
 		log.Fatalf("%v\n%s", err, response)
 	}
-	fmt.Println(response)
+
+	fmt.Println("源文件：", "test-data/upload-demo.txt")
+	fmt.Println("Base64 字符数：", len(base64Data))
+	fmt.Println("目标表单：", template.Data.FormId)
+	fmt.Println("单据内码：", template.Data.InterId)
+	fmt.Println("单据编号：", template.Data.BillNO)
+	fmt.Println("分块大小：", yikdwebclient.DefaultChunkSize)
+	fmt.Println("登录请求地址：", client.ReturnLoginWebModel.RequestUrl)
+	fmt.Println("登录请求报文：", client.ReturnLoginWebModel.RealRequestBody)
+	fmt.Println("登录返回报文：", client.ReturnLoginWebModel.RealResponseBody)
+	fmt.Println("最后一块请求地址：", client.ReturnOperationWebModel.RequestUrl)
+	fmt.Println("最后一块请求报文：", client.ReturnOperationWebModel.RealRequestBody)
+	fmt.Println("最后一块返回报文：", client.ReturnOperationWebModel.RealResponseBody)
+	fmt.Println("上传方法返回值：", response)
 }
 ```
 
@@ -1389,7 +1744,6 @@ Git 托管平台的「创建 Release」页面对 Go Module **不是必须步骤*
 | `examples/basic` | 初次使用者 | 最小查询示例 | 否 |
 | `examples/readme` | 文档维护者、读者 | 15 个可复现场景、本地 mock、真实环境入口 | 否 |
 | `docs/screenshots` | README 读者 | 由示例真实输出生成的文档图片 | 否 |
-| `docs/generate-readme-screenshots.ps1` | 文档维护者 | 运行示例并使用 Edge 无头模式生成 PNG | 否 |
 | `docs/API_MAPPING.md` | 迁移用户 | C# / Go 方法与差异对照 | 否 |
 | `docs/RELEASE.md` | 维护者 | Tag、验证和双仓库发布流程 | 否 |
 | `build-release.ps1` / `.bat` | 维护者 | 执行 gofmt 检查、vet、test、module 验证 | 否 |
@@ -1538,50 +1892,9 @@ Go 不会根据文件名自动复制资源。相对路径按进程当前工作�
 
 这通常表示请求已到达附件接口，但服务端没有正确配置附件或对象存储，或示例中的表单、单据内码和编号不存在。请先完成服务端配置，再替换为目标环境中的真实参数。
 
-## 14. 重新生成 README 截图
+## 14. 开发、测试与双远端推送
 
-截图生成器要求：
-
-- Windows PowerShell 5.1 或 PowerShell 7；
-- Go 1.22+；
-- Microsoft Edge，用于无头 HTML -> PNG 渲染。
-
-默认生成全部本地 mock 截图，不需要任何金蝶凭据：
-
-```powershell
-powershell.exe -NoProfile -ExecutionPolicy Bypass `
-  -File .\docs\generate-readme-screenshots.ps1
-```
-
-只生成指定场景：
-
-```powershell
-powershell.exe -NoProfile -ExecutionPolicy Bypass `
-  -File .\docs\generate-readme-screenshots.ps1 `
-  -ExampleCommand sign-sha256
-```
-
-如果 `go` 不在 `PATH`，可显式指定：
-
-```powershell
-powershell.exe -NoProfile -ExecutionPolicy Bypass `
-  -File .\docs\generate-readme-screenshots.ps1 `
-  -GoExecutable "C:\Go\bin\go.exe"
-```
-
-要在自己的**专用测试账套**中生成真实输出截图，先按 5.1 节设置环境变量，再显式传入 `-Live`：
-
-```powershell
-powershell.exe -NoProfile -ExecutionPolicy Bypass `
-  -File .\docs\generate-readme-screenshots.ps1 `
-  -Live
-```
-
-脚本会先执行 `go test ./...`，然后运行每个 `examples/readme` 命令，对密码做双重脱敏，最后将控制台的实际输出渲染到 `docs/screenshots/*.png`。端口、时间戳、nonce 和签名每次可能不同，这是真实运行的正常结果。
-
-## 15. 开发、测试与双远端推送
-
-### 15.1 本地质量检查
+### 14.1 本地质量检查
 
 ```bash
 go fmt ./...
@@ -1597,7 +1910,7 @@ Windows 上可直接执行：
 
 测试使用 `httptest` 本地回环服务器，不需要真实金蝶环境，也不会向外部业务服务发送请求。
 
-### 15.2 双远端配置
+### 14.2 双远端配置
 
 当前仓库使用一个 `origin`：
 
@@ -1633,7 +1946,7 @@ git push origin v1.0.0
 
 会尝试将内容推送到两个 push URL。如果某一平台的身份验证失败，Git 会报告该目标失败；修复对应平台凭据后应重新推送，并验证两个仓库的分支与 Tag 一致。
 
-### 15.3 项目地址
+### 14.3 项目地址
 
 - C# Gitee：<https://gitee.com/lnsyzjw/yi-kd-web-client>
 - C# GitHub：<https://github.com/1609676823/YiKdWebClient>
